@@ -1,0 +1,12 @@
+************* Welcome ****************************
+* Usage:
+*     just type stuff and press enter to chat.
+*
+*  Cmds:
+*    /username blah (change username to blah)
+*    @blah hello (whispers "hello" to blah)
+*    /list (show user list)
+*    /bye (quits!)
+*    /help (displays this msg)
+*
+*************************************************

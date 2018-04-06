@@ -1,0 +1,85 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"net"
+	"strings"
+)
+
+// this really belongs in clientManager.go - i had to make the func below a method of clientManger so it could "see" the clientMananger channels
+// ...I had intended for this function to be a pure networks and comms funciton. Because of channel scope this concept became a bit muddled in the end. 
+//... eg. client manager performs the broadcast because I needed to range through the clients.
+func (manager *clientManager) handleMessages(conn net.Conn, cs *clientState) {
+	reader := bufio.NewReader(conn)
+	for {
+		incoming, err := reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		incoming = strings.NewReplacer("\r", "", "\n", "").Replace(incoming)
+
+		if strings.HasPrefix(incoming, "/") {
+			if strings.HasPrefix(incoming, "/bye") {
+				break
+			}
+			if strings.HasPrefix(incoming, "/list") {
+				usernames := manager.submitCMReadAll()
+				msgChannel <- &message{cs.username, "CHANOP", "SENDERONLY", fmt.Sprintf("%s\r\n", formatUserList(usernames))}
+				continue
+			}
+
+			if strings.HasPrefix(incoming, "/help") {
+				msgChannel <- &message{cs.username, "CHANOP", "SENDERONLY", fmt.Sprintf("%s\r\n", getWelcome())}
+				continue
+			}
+			if strings.HasPrefix(incoming, "/username") {
+				prevUsername := cs.username
+				newUsername := strings.NewReplacer("/username ", "", "\r", "", "\n", "", "anonymous", "").Replace(incoming)
+				if len(newUsername) > 0 && strings.Index(newUsername, "/") == -1 {
+					usernames := manager.submitCMReadAll()
+					if !usernameInUse(usernames, newUsername) {
+						if manager.submitCMWrite(conn, newUsername) {
+							cs.username = newUsername
+							msgChannel <- &message{newUsername, "CHANOP", "ALL", fmt.Sprintf(" * %s changed username to [%s]\r\n", prevUsername, newUsername)}
+						}
+						continue
+					} else {
+						msgChannel <- &message{prevUsername, "CHANOP", "SENDERONLY", fmt.Sprintf(" * %s failed to change username to \"%s\"\r\n", prevUsername, newUsername)}
+						continue
+					}
+				} else {
+					msgChannel <- &message{prevUsername, "CHANOP", "SENDERONLY", fmt.Sprintf(" * %s failed to change username to \"%s\"\r\n", prevUsername, newUsername)}
+					continue
+				}
+			}
+			//all the valid commands have been processed and this one was not understood.
+			msgChannel <- &message{cs.username, "CHANOP", "SENDERONLY", fmt.Sprintf(" * %s issued unrecognised command \"%s\"\r\n", cs.username, incoming)}
+			continue
+		} else if strings.HasPrefix(string(incoming), "@") {
+			//extract username and message
+			if strings.Index(incoming, " ") > 1 && len(incoming) > 3 {
+				usernames := manager.submitCMReadAll()
+				whisperToUser := incoming[1:strings.Index(incoming, " ")]
+				whisperMsg := incoming[strings.Index(incoming, " ")+1 : len(incoming)]
+				if usernameInUse(usernames, whisperToUser) {
+					msgChannel <- &message{whisperToUser, "WHISPER", "SENDERONLY", fmt.Sprintf("[%s] whispers> %s\r\n", cs.username, whisperMsg)}
+					continue
+				} else {
+					msgChannel <- &message{cs.username, "WHISPER", "SENDERONLY", fmt.Sprintf(" * \"%s\" is unknown user\r\n", whisperToUser)}
+					continue
+				}
+			} else {
+				msgChannel <- &message{cs.username, "WHISPER", "SENDERONLY", fmt.Sprintf(" * %s issued unrecognised command \"%s\"\r\n", cs.username, incoming)}
+				continue
+			}
+		}
+
+		msgChannel <- &message{cs.username, "NORMAL", "ALLEXCEPTSENDER", fmt.Sprintf("[%s]> %s\r\n", cs.username, incoming)}
+	}
+	// When we encouter `err` reading, send this
+	// connection to `deadConnections` for removal.
+	//
+
+	deadConnections <- conn
+}
