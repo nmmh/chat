@@ -89,4 +89,4 @@ main()
 ```
 ___________			
 ### Screenshot
-![chat screenshot]chat_screenshot.jpg
+![alt text](https://github.com/nmmh/chat2/blob/master/chat_screenshot.JPG?raw=true "screenshot of servers and 3 sessions")
