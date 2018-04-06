@@ -13,6 +13,12 @@ I considered using the sync map included in GO 1.9 but was terrified of the warn
 **I am new to GOLANG.**  
 **Postive/constructive criticism will be gratefully received**
 
+TODO:  
+* Close channels when the app stops.
+* Clean up messageHandler
+* Resolve ownership of the channels (Its not clear whether a separate set of network channels should be used)
+* other things
+
 ### Install:  
 ____________
 ```
@@ -68,11 +74,11 @@ main()
 	go func()
 		for 
 			accept.tcp conn			
-			submit on newConnections		
+			submit on newConnections <		
 		
 	for 
 		select
-		case newconnections
+		case newConnections
 			get clientsate for this connection.
 			
 			go messageHandler()
