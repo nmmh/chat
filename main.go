@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -48,7 +49,9 @@ func init() {
 func main() {
 	//this is the count of users that ever connected.
 	clientCount := 0
-	serverPort := 6000
+	var serverPort int
+	flag.IntVar(&serverPort, "port", 6000, "An int representing the port the server should be run on")
+	flag.Parse()
 
 	cliManager := clientManager{
 		clients:          make(map[net.Conn]*clientState),

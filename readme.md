@@ -15,8 +15,11 @@ I considered using the sync map included in GO 1.9 but was terrified of the warn
 
 TODO:  
 * Close channels when the app stops. (I assume the channels in here are a concurrent travesty)
+* stop using goroutines like they are going out of fashion
 * Clean up messageHandler
 * Resolve ownership of the channels (Its not clear whether a separate set of network channels should be used)
+* tests
+* testing on other OSs - currently windows
 * other things
 
 ### Install:  
@@ -62,13 +65,14 @@ init()
 
 main()
 	go clientManager.start()		
-		select
-		case reads:
-		case readallvals:
-		case writes:
-		case msgsforbroadcast:
-		case kills:
-	
+		for
+			select
+			case reads:
+			case readallvals:
+			case writes:
+			case msgsforbroadcast:
+			case kills:
+		
 	start tcp server
 	
 	go func()

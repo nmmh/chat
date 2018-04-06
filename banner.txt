@@ -1,4 +1,4 @@
-************* Welcome ****************************
+***************** ~CHAT~ ************************
 * Usage:
 *     just type stuff and press enter to chat.
 *
