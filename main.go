@@ -14,6 +14,7 @@ type clientState struct {
 }
 
 var (
+	//this old code is commented
 	//client state -
 	/*
 		reads            chan *readOp
