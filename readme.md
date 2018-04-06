@@ -14,7 +14,7 @@ I considered using the sync map included in GO 1.9 but was terrified of the warn
 **Postive/constructive criticism will be gratefully received**
 
 TODO:  
-* Close channels when the app stops.
+* Close channels when the app stops. (I assume the channels in here are a concurrent travesty)
 * Clean up messageHandler
 * Resolve ownership of the channels (Its not clear whether a separate set of network channels should be used)
 * other things
@@ -89,4 +89,4 @@ main()
 ```
 ___________			
 ### Screenshot
-![alt text](https://github.com/nmmh/chat2/blob/master/chat_screenshot.JPG?raw=true "screenshot of servers and 3 sessions")
+![alt text](https://github.com/nmmh/chat2/blob/master/chat_screenshot.JPG?raw=true "screenshot of server and 3 client sessions")

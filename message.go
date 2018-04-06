@@ -35,6 +35,6 @@ func sendMessage(conn net.Conn, msg *message) {
 func sendString(conn net.Conn, msg string) {
 	_, err := conn.Write([]byte(msg))
 	if err != nil {
-		//deadConnections <- conn
+		deadConnections <- conn
 	}
 }
