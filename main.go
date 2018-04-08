@@ -16,32 +16,12 @@ type ClientState struct {
 }
 
 var (
-	//this old code is commented
-	//client state -
-	/*
-		reads            chan *readOp
-		readsAllVals     chan *readOpAllVals
-		writes           chan *writeOp
-		msgsForBroadcast chan *broadcastMsgOp
-		kills            chan net.Conn
-	*/
-	//
 	newConnections  chan net.Conn
 	msgChannel      chan *message
 	deadConnections chan net.Conn
 )
 
 func init() {
-	/*
-		//client state
-		reads = make(chan *readOp)
-		readsAllVals = make(chan *readOpAllVals)
-		writes = make(chan *writeOp)
-		msgsForBroadcast = make(chan *broadcastMsgOp)
-		kills = make(chan net.Conn)
-		//
-	*/
-
 	newConnections = make(chan net.Conn)
 	msgChannel = make(chan *message)
 	deadConnections = make(chan net.Conn)
@@ -51,17 +31,12 @@ func main() {
 	//this is the count of users that ever connected.
 	clientCount := 0
 	var serverPort int
+
 	flag.IntVar(&serverPort, "port", 6000, "Th port to ru the server on")
 	flag.Parse()
 
-	cm := ClientManager{
-		clients:          make(map[net.Conn]*ClientState),
-		reads:            make(chan *readOp),
-		readsAllVals:     make(chan *readOpAllVals),
-		writes:           make(chan *writeOp),
-		msgsForBroadcast: make(chan *broadcastMsgOp),
-		kills:            make(chan net.Conn),
-	}
+	// Create a new Client Manager.
+	cm := NewCM()
 	go cm.Start()
 	// Start the TCP server
 	//
@@ -99,7 +74,6 @@ func main() {
 	}()
 
 	for {
-
 		// Handle 1) new connections; 2) dead connections;
 		// and, 3) received messages.
 		//

@@ -34,6 +34,18 @@ type ClientManager struct {
 	kills            chan net.Conn
 }
 
+//NewCM - creates a ClientManger
+func NewCM() *ClientManager {
+	return &ClientManager{
+		clients:          make(map[net.Conn]*ClientState),
+		reads:            make(chan *readOp),
+		readsAllVals:     make(chan *readOpAllVals),
+		writes:           make(chan *writeOp),
+		msgsForBroadcast: make(chan *broadcastMsgOp),
+		kills:            make(chan net.Conn),
+	}
+}
+
 // Start jhg
 func (cm *ClientManager) Start() {
 	for {
