@@ -9,7 +9,8 @@ import (
 	"strconv"
 )
 
-type clientState struct {
+//ClientState te
+type ClientState struct {
 	username string
 	//status string //away;busy;idle
 }
@@ -50,18 +51,18 @@ func main() {
 	//this is the count of users that ever connected.
 	clientCount := 0
 	var serverPort int
-	flag.IntVar(&serverPort, "port", 6000, "An int representing the port the server should be run on")
+	flag.IntVar(&serverPort, "port", 6000, "Th port to ru the server on")
 	flag.Parse()
 
-	cliManager := clientManager{
-		clients:          make(map[net.Conn]*clientState),
+	cm := ClientManager{
+		clients:          make(map[net.Conn]*ClientState),
 		reads:            make(chan *readOp),
 		readsAllVals:     make(chan *readOpAllVals),
 		writes:           make(chan *writeOp),
 		msgsForBroadcast: make(chan *broadcastMsgOp),
 		kills:            make(chan net.Conn),
 	}
-	go cliManager.start()
+	go cm.Start()
 	// Start the TCP server
 	//
 	server, err := net.Listen("tcp", ":"+strconv.Itoa(serverPort))
@@ -89,7 +90,7 @@ func main() {
 			// Add this connection to the `clientsMap` map
 			//
 			//clientsMap[conn] =
-			if cliManager.submitCMWrite(conn, "anonymous"+strconv.Itoa(clientCount)) {
+			if cm.Write(conn, "anonymous"+strconv.Itoa(clientCount)) {
 				log.Printf("Accepted new client, %s@%s", "anonymous"+strconv.Itoa(clientCount), conn.RemoteAddr())
 				sendWelcome(conn)
 				newConnections <- conn
@@ -104,14 +105,14 @@ func main() {
 		//
 		select {
 		case conn := <-newConnections:
-			cs := cliManager.submitCMRead(conn)
-			go cliManager.handleMessages(conn, cs)
+			cs := cm.Read(conn)
+			go cm.handleMessages(conn, cs)
 
 		case msg := <-msgChannel:
-			cliManager.msgsForBroadcast <- &broadcastMsgOp{msg: msg}
+			cm.msgsForBroadcast <- &broadcastMsgOp{msg: msg}
 
 		case conn := <-deadConnections:
-			cliManager.kills <- conn
+			cm.kills <- conn
 		}
 
 	}

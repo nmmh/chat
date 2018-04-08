@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-// this really belongs in clientManager.go - i had to make the func below a method of clientManger so it could "see" the clientMananger channels
-// ...I had intended for this function to be a pure networks and comms funciton. Because of channel scope this concept became a bit muddled in the end. 
+// this really belongs in ClientManager.go - i had to make the func below a method of clientManger so it could "see" the clientMananger channels
+// ...I had intended for this function to be a pure networks and comms funciton. Because of channel scope this concept became a bit muddled in the end.
 //... eg. client manager performs the broadcast because I needed to range through the clients.
-func (manager *clientManager) handleMessages(conn net.Conn, cs *clientState) {
+func (manager *ClientManager) handleMessages(conn net.Conn, cs *ClientState) {
 	reader := bufio.NewReader(conn)
 	for {
 		incoming, err := reader.ReadString('\n')
@@ -24,7 +24,7 @@ func (manager *clientManager) handleMessages(conn net.Conn, cs *clientState) {
 				break
 			}
 			if strings.HasPrefix(incoming, "/list") {
-				usernames := manager.submitCMReadAll()
+				usernames := manager.ReadAll()
 				msgChannel <- &message{cs.username, "CHANOP", "SENDERONLY", fmt.Sprintf("%s\r\n", formatUserList(usernames))}
 				continue
 			}
@@ -37,9 +37,9 @@ func (manager *clientManager) handleMessages(conn net.Conn, cs *clientState) {
 				prevUsername := cs.username
 				newUsername := strings.NewReplacer("/username ", "", "\r", "", "\n", "", "anonymous", "").Replace(incoming)
 				if len(newUsername) > 0 && strings.Index(newUsername, "/") == -1 {
-					usernames := manager.submitCMReadAll()
+					usernames := manager.ReadAll()
 					if !usernameInUse(usernames, newUsername) {
-						if manager.submitCMWrite(conn, newUsername) {
+						if manager.Write(conn, newUsername) {
 							cs.username = newUsername
 							msgChannel <- &message{newUsername, "CHANOP", "ALL", fmt.Sprintf(" * %s changed username to [%s]\r\n", prevUsername, newUsername)}
 						}
@@ -59,7 +59,7 @@ func (manager *clientManager) handleMessages(conn net.Conn, cs *clientState) {
 		} else if strings.HasPrefix(string(incoming), "@") {
 			//extract username and message
 			if strings.Index(incoming, " ") > 1 && len(incoming) > 3 {
-				usernames := manager.submitCMReadAll()
+				usernames := manager.ReadAll()
 				whisperToUser := incoming[1:strings.Index(incoming, " ")]
 				whisperMsg := incoming[strings.Index(incoming, " ")+1 : len(incoming)]
 				if usernameInUse(usernames, whisperToUser) {
