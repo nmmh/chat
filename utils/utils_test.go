@@ -41,6 +41,7 @@ func TestFormatUserList(t *testing.T) {
 	}{
 		{[]string{"neil", "matt", "adam"}, "UserList:{adam, matt, neil} Total:[3]"},
 		{[]string{"neil", "matt", "adam", "linda"}, "UserList:{adam, linda, matt, neil} Total:[4]"},
+		{[]string{}, "UserList:{} Total:[0]"},
 	}
 	for _, c := range tests1 {
 		got, err := formatUserList(c.s)
