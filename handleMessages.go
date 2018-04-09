@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"strings"
+
+	"github.com/nmmh/chat/utils"
 )
 
 // this really belongs in ClientManager.go - i had to make the func below a method of clientManger so it could "see" the clientMananger channels
@@ -25,7 +27,8 @@ func (cm *ClientManager) handleMessages(conn net.Conn, cs *ClientState) {
 			}
 			if strings.HasPrefix(incoming, "/list") {
 				usernames := cm.ReadAll()
-				msgChannel <- &message{cs.username, "CHANOP", "SENDERONLY", fmt.Sprintf("%s\r\n", formatUserList(usernames))}
+				ul, _ := utils.FormatUserList(usernames)
+				msgChannel <- &message{cs.username, "CHANOP", "SENDERONLY", fmt.Sprintf("%s\r\n", ul)}
 				continue
 			}
 
@@ -38,7 +41,7 @@ func (cm *ClientManager) handleMessages(conn net.Conn, cs *ClientState) {
 				newUsername := strings.NewReplacer("/username ", "", "\r", "", "\n", "", "anonymous", "").Replace(incoming)
 				if len(newUsername) > 0 && strings.Index(newUsername, "/") == -1 {
 					usernames := cm.ReadAll()
-					if !usernameInUse(usernames, newUsername) {
+					if uiu, _ := utils.UsernameInUse(usernames, newUsername); !uiu {
 						if cm.Write(conn, newUsername) {
 							cs.username = newUsername
 							msgChannel <- &message{newUsername, "CHANOP", "ALL", fmt.Sprintf(" * %s changed username to [%s]\r\n", prevUsername, newUsername)}
@@ -62,7 +65,7 @@ func (cm *ClientManager) handleMessages(conn net.Conn, cs *ClientState) {
 				usernames := cm.ReadAll()
 				whisperToUser := incoming[1:strings.Index(incoming, " ")]
 				whisperMsg := incoming[strings.Index(incoming, " ")+1 : len(incoming)]
-				if usernameInUse(usernames, whisperToUser) {
+				if uiu, _ := utils.UsernameInUse(usernames, whisperToUser); !uiu {
 					msgChannel <- &message{whisperToUser, "WHISPER", "SENDERONLY", fmt.Sprintf("[%s] whispers> %s\r\n", cs.username, whisperMsg)}
 					continue
 				} else {

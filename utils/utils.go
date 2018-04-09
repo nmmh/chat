@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-func formatUserList(usernameSlice []string) (string, error) {
+//FormatUserList extracts,sorts adn returns a userlist string
+func FormatUserList(usernameSlice []string) (string, error) {
 	//sort first
 	sort.Strings(usernameSlice)
 	ul := "UserList:{"
@@ -17,11 +18,13 @@ func formatUserList(usernameSlice []string) (string, error) {
 	return ul, nil
 }
 
-func usernameInUse(s []string, search string) (bool, error) {
-	return stringInSlice(s, search)
+//UsernameInUse looksup a username returns true if found
+func UsernameInUse(s []string, search string) (bool, error) {
+	return StringInSlice(s, search)
 }
 
-func stringInSlice(s []string, search string) (bool, error) {
+//StringInSlice looksup a string in a slice returns true if found
+func StringInSlice(s []string, search string) (bool, error) {
 	for _, val := range s {
 		if val == search {
 			return true, nil
