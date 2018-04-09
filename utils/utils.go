@@ -7,14 +7,14 @@ import (
 )
 
 //FormatUserList extracts,sorts adn returns a userlist string
-func FormatUserList(usernameSlice []string) (string, error) {
+func FormatUserList(usernames []string) (string, error) {
 	//sort first
-	sort.Strings(usernameSlice)
+	sort.Strings(usernames)
 	ul := "UserList:{"
-	for _, user := range usernameSlice {
-		ul += fmt.Sprintf("%s, ", user)
+	for _, username := range usernames {
+		ul += fmt.Sprintf("%s, ", username)
 	}
-	ul = strings.TrimSuffix(ul, ", ") + fmt.Sprintf("} Total:[%d]", len(usernameSlice))
+	ul = strings.TrimSuffix(ul, ", ") + fmt.Sprintf("} Total:[%d]", len(usernames))
 	return ul, nil
 }
 
