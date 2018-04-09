@@ -21,14 +21,14 @@ var tests = []struct {
 //Test d
 func TestStringInSlice(t *testing.T) {
 	for _, c := range tests {
-		got, err := stringInSlice(c.s, c.search)
+		got, err := StringInSlice(c.s, c.search)
 		ok(t, err)
 		equals(t, c.want, got)
 	}
 }
 func TestUsernameInUse(t *testing.T) {
 	for _, c := range tests {
-		got, err := usernameInUse(c.s, c.search)
+		got, err := UsernameInUse(c.s, c.search)
 		ok(t, err)
 		equals(t, c.want, got)
 	}
@@ -44,7 +44,7 @@ func TestFormatUserList(t *testing.T) {
 		{[]string{}, "UserList:{} Total:[0]"},
 	}
 	for _, c := range tests1 {
-		got, err := formatUserList(c.s)
+		got, err := FormatUserList(c.s)
 		ok(t, err)
 		equals(t, c.want, got)
 	}
