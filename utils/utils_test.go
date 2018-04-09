@@ -18,7 +18,6 @@ var tests = []struct {
 	{[]string{"neil", "matt", "adam"}, "adam", true},
 }
 
-//Test d
 func TestStringInSlice(t *testing.T) {
 	for _, c := range tests {
 		got, err := StringInSlice(c.s, c.search)

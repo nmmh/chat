@@ -11,16 +11,16 @@ func FormatUserList(usernameSlice []string) (string, error) {
 	//sort first
 	sort.Strings(usernameSlice)
 	ul := "UserList:{"
-	for i := 0; i < len(usernameSlice); i++ {
-		ul += fmt.Sprintf("%s, ", usernameSlice[i])
+	for _, user := range usernameSlice {
+		ul += fmt.Sprintf("%s, ", user)
 	}
 	ul = strings.TrimSuffix(ul, ", ") + fmt.Sprintf("} Total:[%d]", len(usernameSlice))
 	return ul, nil
 }
 
 //UsernameInUse looksup a username returns true if found
-func UsernameInUse(s []string, search string) (bool, error) {
-	return StringInSlice(s, search)
+func UsernameInUse(usernames []string, search string) (bool, error) {
+	return StringInSlice(usernames, search)
 }
 
 //StringInSlice looksup a string in a slice returns true if found
