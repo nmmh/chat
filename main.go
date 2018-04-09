@@ -32,14 +32,14 @@ func main() {
 	clientCount := 0
 	var serverPort int
 
-	flag.IntVar(&serverPort, "port", 6000, "Th port to ru the server on")
+	flag.IntVar(&serverPort, "port", 6000, "The port to run Chat server on")
 	flag.Parse()
 
 	// Create a new Client Manager.
 	cm := NewCM()
 	go cm.Start()
+
 	// Start the TCP server
-	//
 	server, err := net.Listen("tcp", ":"+strconv.Itoa(serverPort))
 	if err != nil {
 		log.Println(err)

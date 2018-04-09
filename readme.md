@@ -1,22 +1,23 @@
 
-# Chat - a golang chat tcp server
+# Chat - a golang chat concurrent tcp server
 ## This is a basic chat server that uses goroutines. A telnet client can be used to connect.
 ### This program is an __attempt__ to demonstrate the maintenance of state between goroutines using channels. This is a learning excercise.
 
 >"Do not communicate by sharing memory; instead, share memory by communicating."
 
-Pfff... very tricky from what I am more used to.
+Pfff... very tricky.
 
-Anyway, this monster could probably be better written with a RWMUTEX.   
+So I wanted to protect a map from problems arising from being accessed by several different go routines by using channels. 
+It could probably be better written with a RWMUTEX.   
 I considered using the sync map included in GO 1.9 but was terrified of the warning regarding ranging through the map - no guarantee of a consistent map - I dont really know specifically what that means, but I knew I needed to range through the map and so stayed away...
 
 **I am new to GOLANG.**  
 **Postive/constructive criticism will be gratefully received**
 
 TODO:  
-* Close channels when the app stops. (I assume the channels in here are a concurrent travesty)
-* stop using goroutines like they are going out of fashion
-* Clean up messageHandler
+* Close channels when the app stops. (I assume the channels in here are a concurrent travesty in terms of leaks etc.)
+* stop over using channels 
+* Clean up messageHandler lots of boilerplate meesages
 * Resolve ownership of the channels (Its not clear whether a separate set of network channels should be used)
 * tests
 * testing on other OSs - currently windows

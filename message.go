@@ -15,7 +15,6 @@ type message struct {
 
 func getWelcome() []byte {
 	fileName, _ := filepath.Abs("banner.txt")
-	//fileName := "C:/neil/dev/gowork/src/chat/banner.txt"
 	welcome, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		panic(err)
