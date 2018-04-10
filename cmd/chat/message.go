@@ -14,7 +14,7 @@ type message struct {
 }
 
 func getWelcome() []byte {
-	fileName, _ := filepath.Abs("banner.txt")
+	fileName, _ := filepath.Abs("../../assets/banner.txt")
 	welcome, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		panic(err)
@@ -23,7 +23,6 @@ func getWelcome() []byte {
 }
 
 func sendWelcome(conn net.Conn) {
-
 	//send welcome message in a goroutine so that the network doesnt block
 	go sendString(conn, string(getWelcome()))
 }

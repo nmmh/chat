@@ -1,0 +1,9 @@
+credits
+https://github.com/kljensen/golang-chat (I cloned this initially)
+
+https://github.com/jhudson8/golang-chat-example/blob/master/client.go (based the client on this.)
+
+https://codereview.stackexchange.com/questions/181415/golang-concurrent-tcp-server (This is interesting doesnt use channels/goroutines.)
+
+
+https://gist.github.com/paulsmith/775764 (sweet lil gist simplified tcp server)

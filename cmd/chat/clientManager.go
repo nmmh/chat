@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sort"
+	"strings"
+
+	"github.com/nmmh/chat/utils"
 )
 
 type readOp struct {
@@ -106,4 +110,21 @@ func (cm *ClientManager) Write(conn net.Conn, username string) bool {
 	write := &writeOp{key: conn, val: &ClientState{username: username}, resp: make(chan bool)}
 	cm.writes <- write
 	return <-write.resp
+}
+
+//FormatUserList extracts,sorts adn returns a userlist string
+func (cm *ClientManager) FormatUserList(usernames []string) (string, error) {
+	//sort first
+	sort.Strings(usernames)
+	ul := "UserList:{"
+	for _, username := range usernames {
+		ul += fmt.Sprintf("%s, ", username)
+	}
+	ul = strings.TrimSuffix(ul, ", ") + fmt.Sprintf("} Total:[%d]", len(usernames))
+	return ul, nil
+}
+
+//UsernameInUse looksup a username returns true if found
+func (cm *ClientManager) UsernameInUse(usernames []string, search string) (bool, error) {
+	return utils.StringInSlice(usernames, search)
 }
