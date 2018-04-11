@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
@@ -79,8 +80,9 @@ func main() {
 		//
 		select {
 		case conn := <-newConnections:
-			cs := cm.Read(conn)
-			go cm.handleMessages(conn, cs)
+			cs := cm.ReadByKey(conn)
+			reader := bufio.NewReader(conn)
+			go cm.handleMessages(conn, cs, reader)
 
 		case msg := <-msgChannel:
 			cm.msgsForBroadcast <- &broadcastMsgOp{msg: msg}

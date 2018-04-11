@@ -91,21 +91,21 @@ func (cm *ClientManager) Start() {
 	}
 }
 
-// Read kjk
-func (cm *ClientManager) Read(conn net.Conn) *ClientState {
+// ReadByKey - this reads a value (clientState) from the CM
+func (cm *ClientManager) ReadByKey(conn net.Conn) *ClientState {
 	read := &readOp{key: conn, resp: make(chan *ClientState)}
 	cm.reads <- read
 	return <-read.resp
 }
 
-// ReadAll iuh
+// ReadAll This should probably return a copy of the entire client manager
 func (cm *ClientManager) ReadAll() []string {
 	readAllVals := &readOpAllVals{resp: make(chan []string)}
 	cm.readsAllVals <- readAllVals
 	return <-readAllVals.resp
 }
 
-// Write fsdf
+// Write the connection and the client state to the ClientManager
 func (cm *ClientManager) Write(conn net.Conn, username string) bool {
 	write := &writeOp{key: conn, val: &ClientState{username: username}, resp: make(chan bool)}
 	cm.writes <- write

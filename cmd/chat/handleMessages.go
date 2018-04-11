@@ -10,8 +10,9 @@ import (
 // this really belongs in ClientManager.go - i had to make the func below a method of clientManger so it could "see" the clientMananger channels
 // ...I had intended for this function to be a pure networks and comms funciton. Because of channel scope this concept became a bit muddled in the end.
 //... eg. client manager performs the broadcast because I needed to range through the clients.
-func (cm *ClientManager) handleMessages(conn net.Conn, cs *ClientState) {
-	reader := bufio.NewReader(conn)
+
+//dont want to pass conn here but will for the moment.
+func (cm *ClientManager) handleMessages(conn net.Conn, cs *ClientState, reader *bufio.Reader) {
 	for {
 		incoming, err := reader.ReadString('\n')
 		if err != nil {

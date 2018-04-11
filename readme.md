@@ -94,4 +94,4 @@ main()
 ```
 ___________			
 ### Screenshot
-![alt text]https://github.com/nmmh/chat/blob/master/assets/chat_screenshot.JPG?raw=true "screenshot of server and 3 client sessions")
+![alt text](https://github.com/nmmh/chat/blob/master/assets/chat_screenshot.JPG?raw=true "screenshot of server and 3 client sessions")
