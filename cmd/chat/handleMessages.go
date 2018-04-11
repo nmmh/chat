@@ -63,7 +63,7 @@ func (cm *ClientManager) handleMessages(conn net.Conn, cs *ClientState) {
 				usernames := cm.ReadAll()
 				whisperToUser := incoming[1:strings.Index(incoming, " ")]
 				whisperMsg := incoming[strings.Index(incoming, " ")+1 : len(incoming)]
-				if uiu, _ := cm.UsernameInUse(usernames, whisperToUser); !uiu {
+				if uiu, _ := cm.UsernameInUse(usernames, whisperToUser); uiu {
 					msgChannel <- &message{whisperToUser, "WHISPER", "SENDERONLY", fmt.Sprintf("[%s] whispers> %s\r\n", cs.username, whisperMsg)}
 					continue
 				} else {
