@@ -12,16 +12,16 @@ import (
 	"strings"
 )
 
-type message struct {
-	username string
-	//msgType  string //NORMAL;CHANOP;WHSIPER
-	msgScope string //ALL;SENDERONLY,ALLEXCEPTSENDER
-	text     string
-}
-
-type client struct {
-	conn     net.Conn
-	username string
+//ChatServer info
+type ChatServer struct {
+	conf                 *Configuration
+	lsnr                 net.Listener
+	clients              map[*client]struct{}
+	clientCounter        int
+	messageChan          chan *message
+	writeClientsChan     chan *client
+	deleteClientsChan    chan *client
+	readAllUsernamesChan chan chan []string
 }
 
 //Configuration this should contain the responses from the server
@@ -47,16 +47,16 @@ type Configuration struct {
 	AcceptedLog            string
 }
 
-//ChatServer info
-type ChatServer struct {
-	conf                 *Configuration
-	lsnr                 net.Listener
-	clients              map[*client]struct{}
-	clientCounter        int
-	messageChan          chan *message
-	writeClientsChan     chan *client
-	deleteClientsChan    chan *client
-	readAllUsernamesChan chan chan []string
+type message struct {
+	username string
+	//msgType  string //NORMAL;CHANOP;WHSIPER
+	msgScope string //ALL;SENDERONLY,ALLEXCEPTSENDER
+	text     string
+}
+
+type client struct {
+	conn     net.Conn
+	username string
 }
 
 // NewChatServer starts listening on port and returns an intialised server.

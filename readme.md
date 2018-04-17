@@ -1,5 +1,5 @@
 
-# Chat - a golang chat concurrent tcp server
+# Chat - a golang concurrent tcp chat server
 ## This is a basic chat server that uses goroutines. A telnet client can be used to connect.
 ### This program is an __attempt__ to demonstrate the maintenance of state between goroutines using channels. This is a learning excercise.
 
@@ -15,7 +15,7 @@ I considered using the sync map included in GO 1.9 but was terrified of the warn
 **Postive/constructive criticism will be gratefully received**
 
 TODO:  
-* Close channels when the app stops. (I assume the channels in here are a concurrent travesty in ~terms of leaks etc.)
+* Close channels when the app stops. (I assume the channels in here are a concurrent travesty in terms of leaks etc.)
 * ~~stop over using channels~~
 * Clean up messageHandler ~~lots of boilerplate messages~~ still lots of conditions
 * ~~Resolve ownership of the channels (Its not clear whether a separate set of network channels should be used)~~
@@ -61,13 +61,13 @@ ____________
 ### General structure.  (Should be more staight forward now from ChatServer.Start() )
 ```
 go s.sendMessages() //has the channels	
-	for {
-		conn, e := s.lsnr.Accept()
-		if e != nil {
-			continue
-		}
-		go s.handleClient(conn)
-	}
+for { 
+	conn, e := s.lsnr.Accept() 
+	if e != nil { 
+		continue 
+	} 
+	go s.handleClient(conn) 
+}
 ```
 ___________			
 ### Screenshot
