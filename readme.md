@@ -15,12 +15,14 @@ I considered using the sync map included in GO 1.9 but was terrified of the warn
 **Postive/constructive criticism will be gratefully received**
 
 TODO:  
-* Close channels when the app stops. (I assume the channels in here are a concurrent travesty in terms of leaks etc.)
-* stop over using channels 
-* Clean up messageHandler lots of boilerplate meesages
-* Resolve ownership of the channels (Its not clear whether a separate set of network channels should be used)
+* Close channels when the app stops. (I assume the channels in here are a concurrent travesty in ~terms of leaks etc.)
+* ~~stop over using channels~~
+* Clean up messageHandler ~~lots of boilerplate messages~~ still lots of conditions
+* ~~Resolve ownership of the channels (Its not clear whether a separate set of network channels should be used)~~
+* ~~JSON Config file~~
+* ~~pass server port with override~~
 * tests
-* testing on other OSs - currently windows
+* testing on other OSs - currently windows (I am sure there are CRLF issues)
 * other things
 
 ### Install:  
@@ -56,41 +58,16 @@ ____________
 ```
 ____________
 
-### General structure.  
+### General structure.  (Should be more staight forward now from ChatServer.Start() )
 ```
-main.go
-
-types
-
-init()
-
-main()
-	go clientManager.start()		
-		for
-			select
-			case reads:
-			case readallvals:
-			case writes:
-			case msgsforbroadcast:
-			case kills:
-		
-	start tcp server
-	
-	go func()
-		for 
-			accept.tcp conn			
-			submit on newConnections <		
-		
-	for 
-		select
-		case newConnections
-			get clientsate for this connection.
-			
-			go messageHandler()
-			
-		case msgsForBroacast < msgChannel 
-		
-		case kills < deadConnections
+go s.sendMessages() //has the channels	
+	for {
+		conn, e := s.lsnr.Accept()
+		if e != nil {
+			continue
+		}
+		go s.handleClient(conn)
+	}
 ```
 ___________			
 ### Screenshot
