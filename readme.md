@@ -29,7 +29,8 @@ TODO:
 ____________
 ```
 $ go get github.com/nmmh/chat
-$ go build
+$ cd %GO_PATH%/src/github.com/nmmh/chat/cmd/chat
+$ go build; go install
 ```
 ____________
 ### Server Usage:  
@@ -39,7 +40,7 @@ $ ./chat
 ```
 ____________
 
-### Client Usage:  
+### Telnet Client Usage:  
 ____________
 ```
 $ telnet 127.0.0.1 6000

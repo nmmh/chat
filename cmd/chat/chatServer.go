@@ -45,10 +45,8 @@ type Configuration struct {
 		FailedUsername      string
 		Failedwhisper       string
 		UnrecognisedCommand string
-	}
-	Logs struct {
-		ServerStarted string
-		Accepted      string
+		ServerStarted       string
+		Accepted            string
 	}
 }
 
@@ -73,7 +71,7 @@ type client struct {
 	username string
 }
 
-// NewChatServer starts listening on port and returns an intialised server.
+// NewChatServer loads config; starts listening on port and returns an intialised server.
 func NewChatServer(port int) (*ChatServer, error) {
 	//get config from json config file.
 	configuration := Configuration{}
@@ -87,7 +85,7 @@ func NewChatServer(port int) (*ChatServer, error) {
 		return nil, e
 	}
 
-	log.Printf(configuration.Logs.ServerStarted, configuration.Port)
+	log.Printf(configuration.Msgs.ServerStarted, configuration.Port)
 
 	return &ChatServer{&configuration,
 			lsnr,
@@ -123,20 +121,22 @@ func (s *ChatServer) handleClient(conn net.Conn) {
 ForLoop:
 	for scanner.Scan() {
 		incoming := strings.NewReplacer(s.conf.CR, "", s.conf.LF, "").Replace(scanner.Text())
-		if strings.HasPrefix(incoming, s.conf.ChanOpSymbol) {
-			commands := strings.Split(incoming, " ")
-			switch commands[0] {
-			case "/bye":
+		//if strings.HasPrefix(incoming, s.conf.ChanOpSymbol) {
+		commands := strings.Split(incoming, " ")
+		switch string(commands[0][0]) {
+		case s.conf.ChanOpSymbol:
+			switch commands[0][1:len(commands[0])] {
+			case "bye":
 				break ForLoop
-			case "/list":
+			case "list":
 				usernames := s.readUsernamesFromClients()
 				ul, _ := s.formatUserList(usernames)
 				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Info, ul))
 				continue
-			case "/help":
+			case "help":
 				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Info, s.getWelcome()))
 				continue
-			case "/username":
+			case "username":
 				prevUsername := c.username
 				newUsername := strings.NewReplacer(s.conf.CR, "", s.conf.LF, "", s.conf.DefUsername, "").Replace(commands[1])
 				if uiu, _ := s.usernameInUse(newUsername); !uiu && len(newUsername) > 0 && strings.Index(newUsername, s.conf.ChanOpSymbol) == -1 {
@@ -151,10 +151,10 @@ ForLoop:
 				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.UnrecognisedCommand, c.username, incoming))
 				continue
 			}
-		} else if strings.HasPrefix(incoming, s.conf.WhisperSymbol) {
+		case string(s.conf.WhisperSymbol):
 			if strings.Index(incoming, " ") > 1 && len(incoming) > 3 {
-				whisperToUser := incoming[1:strings.Index(incoming, " ")]
-				whisperMsg := incoming[strings.Index(incoming, " ")+1 : len(incoming)]
+				whisperToUser := commands[0][1:len(commands[0])] //incoming[1:strings.Index(incoming, " ")]
+				whisperMsg := commands[1:len(commands)]
 				if uiu, _ := s.usernameInUse(whisperToUser); uiu {
 					s.messageChan <- s.newMessage(whisperToUser, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Whisper, c.username, whisperMsg))
 					continue
@@ -166,9 +166,11 @@ ForLoop:
 				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.UnrecognisedCommand, c.username, incoming))
 				continue
 			}
+		default:
+			//This is the main broadcast of a normal message.
+			s.messageChan <- s.newMessage(c.username, ALLEXCEPTSENDER, fmt.Sprintf(s.conf.Msgs.Normal, c.username, incoming))
 		}
-		//This is the main broadcast of a normal message.
-		s.messageChan <- s.newMessage(c.username, ALLEXCEPTSENDER, fmt.Sprintf(s.conf.Msgs.Normal, c.username, incoming))
+
 	}
 	//only reached when "break OuterLoop" (eg. /bye)
 	s.deleteFromClients(c)
@@ -203,7 +205,7 @@ func (s *ChatServer) sendMessages() {
 			}
 			r <- u
 		case c := <-s.writeClientsChan:
-			log.Printf(s.conf.Logs.Accepted, c.username, c.conn.RemoteAddr())
+			log.Printf(s.conf.Msgs.Accepted, c.username, c.conn.RemoteAddr())
 			s.clients[c] = struct{}{}
 			s.messageChan <- s.newMessage(c.username, ALL, fmt.Sprintf(s.conf.Msgs.HasConnected, c.username))
 		case c := <-s.deleteClientsChan:
@@ -253,7 +255,7 @@ func (s *ChatServer) getWelcome() []byte {
 	if err != nil {
 		panic(err)
 	}
-	return append(welcome, "\r\n"...)
+	return append(welcome, s.conf.CRLF...)
 }
 
 func (s *ChatServer) sendWelcome(conn net.Conn) {

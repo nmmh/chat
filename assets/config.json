@@ -17,10 +17,7 @@
         "Whisper":             "[%s] whispers> %s",
         "FailedUsername":      " * %s failed to change username to \"%s\"",
         "FailedWhisper":       " * \"%s\" is unknown user",
-        "UnrecognisedCommand": " * %s issued unrecognised command \"%s\""
-    },
-    "Logs":
-    {
+        "UnrecognisedCommand": " * %s issued unrecognised command \"%s\"",   
         "Accepted":            "Accepted new client, %s@%s",
         "ServerStarted":       "Server started on port: %d"
     }
