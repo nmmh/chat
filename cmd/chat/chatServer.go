@@ -121,7 +121,6 @@ func (s *ChatServer) handleClient(conn net.Conn) {
 ForLoop:
 	for scanner.Scan() {
 		incoming := strings.NewReplacer(s.conf.CR, "", s.conf.LF, "").Replace(scanner.Text())
-		//if strings.HasPrefix(incoming, s.conf.ChanOpSymbol) {
 		commands := strings.Split(incoming, " ")
 		switch string(commands[0][0]) {
 		case s.conf.ChanOpSymbol:
@@ -152,9 +151,8 @@ ForLoop:
 				continue
 			}
 		case string(s.conf.WhisperSymbol):
-			if strings.Index(incoming, " ") > 1 && len(incoming) > 3 {
-				whisperToUser := commands[0][1:len(commands[0])] //incoming[1:strings.Index(incoming, " ")]
-				whisperMsg := commands[1:len(commands)]
+			if len(commands) > 1 {
+				whisperToUser, whisperMsg := commands[0][1:len(commands[0])], commands[1:len(commands)]
 				if uiu, _ := s.usernameInUse(whisperToUser); uiu {
 					s.messageChan <- s.newMessage(whisperToUser, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Whisper, c.username, whisperMsg))
 					continue
