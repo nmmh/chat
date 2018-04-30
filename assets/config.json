@@ -1,21 +1,27 @@
 {
     "Port":                   6000,
     "Addr":                   "127.0.0.1",
-    "Transport":              "tcp",
     "CR":                     "\r",
     "LF":                     "\n",
     "CRLF":                   "\r\n",
     "DefUsername":            "anonymous",
     "ChanOpSymbol":           "/",
     "WhisperSymbol":          "@",
-    "HasConnectedMsg":        " * [%s] has connected",
-    "HasDisconnectedMsg":     " * [%s] has disconnected",
-    "InfoMsg":                "%s",
-    "NormalMsg":              "[%s]> %s",    
-    "UsernameMsg":            " * %s changed username to [%s]",
-    "WhisperMsg":             "[%s] whispers> %s",
-    "FailedUsernameMsg":      " * %s failed to change username to \"%s\"",
-    "FailedWhisperMsg":       " * \"%s\" is unknown user\r\n",
-    "UnrecognisedCommandMsg": " * %s issued unrecognised command \"%s\"",
-    "AcceptedLog":            "Accepted new client, %s@%s"
+    "Msgs":
+    {
+        "HasConnected":        " * [%s] has connected",
+        "HasDisconnected":     " * [%s] has disconnected",
+        "Info":                "%s",
+        "Normal":              "[%s]> %s",    
+        "Username":            " * %s changed username to [%s]",
+        "Whisper":             "[%s] whispers> %s",
+        "FailedUsername":      " * %s failed to change username to \"%s\"",
+        "FailedWhisper":       " * \"%s\" is unknown user",
+        "UnrecognisedCommand": " * %s issued unrecognised command \"%s\""
+    },
+    "Logs":
+    {
+        "Accepted":            "Accepted new client, %s@%s",
+        "ServerStarted":       "Server started on port: %d"
+    }
 }

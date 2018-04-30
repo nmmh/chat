@@ -1,5 +1,6 @@
 package main
 
+//Chatserver nmmh
 import (
 	"bufio"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 	"strings"
 )
 
-//ChatServer info
+//ChatServer struct for the main server contains a configuration loaded from JSON
 type ChatServer struct {
 	conf                 *Configuration
 	lsnr                 net.Listener
@@ -26,33 +27,46 @@ type ChatServer struct {
 
 //Configuration this should contain the responses from the server
 type Configuration struct {
-	Port                   int
-	Addr                   string
-	Transport              string
-	CR                     string
-	LF                     string
-	CRLF                   string
-	DefUsername            string
-	ChanOpSymbol           string
-	WhisperSymbol          string
-	HasConnectedMsg        string
-	HasDisconnectedMsg     string
-	InfoMsg                string
-	NormalMsg              string
-	UsernameMsg            string
-	WhisperMsg             string
-	FailedUsernameMsg      string
-	FailedwhisperMsg       string
-	UnrecognisedCommandMsg string
-	AcceptedLog            string
+	Port          int
+	Addr          string
+	CR            string
+	LF            string
+	CRLF          string
+	DefUsername   string
+	ChanOpSymbol  string
+	WhisperSymbol string
+	Msgs          struct {
+		HasConnected        string
+		HasDisconnected     string
+		Info                string
+		Normal              string
+		Username            string
+		Whisper             string
+		FailedUsername      string
+		Failedwhisper       string
+		UnrecognisedCommand string
+	}
+	Logs struct {
+		ServerStarted string
+		Accepted      string
+	}
 }
 
 type message struct {
 	username string
 	//msgType  string //NORMAL;CHANOP;WHSIPER
-	msgScope string //ALL;SENDERONLY,ALLEXCEPTSENDER
-	text     string
+	scope msgScope
+	text  string
 }
+
+type msgScope int
+
+//enumerate the message types for msgScope
+const (
+	ALL = iota
+	SENDERONLY
+	ALLEXCEPTSENDER
+)
 
 type client struct {
 	conn     net.Conn
@@ -61,19 +75,19 @@ type client struct {
 
 // NewChatServer starts listening on port and returns an intialised server.
 func NewChatServer(port int) (*ChatServer, error) {
-	//get congif from json config file.
+	//get config from json config file.
 	configuration := Configuration{}
 	err := GetConfigFromJSON("../../assets/config.json", &configuration)
 	if err != nil {
 		return nil, err
 	}
 	configuration.Port = port //override conf with param
-	lsnr, e := net.Listen(configuration.Transport, ":"+strconv.Itoa(configuration.Port))
+	lsnr, e := net.Listen("tcp", ":"+strconv.Itoa(configuration.Port))
 	if e != nil {
 		return nil, e
 	}
 
-	log.Printf("Server started on port: %d", configuration.Port)
+	log.Printf(configuration.Logs.ServerStarted, configuration.Port)
 
 	return &ChatServer{&configuration,
 			lsnr,
@@ -117,24 +131,24 @@ ForLoop:
 			case "/list":
 				usernames := s.readUsernamesFromClients()
 				ul, _ := s.formatUserList(usernames)
-				s.messageChan <- s.newMessage(c.username, "SENDERONLY", fmt.Sprintf(s.conf.InfoMsg, ul))
+				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Info, ul))
 				continue
 			case "/help":
-				s.messageChan <- s.newMessage(c.username, "SENDERONLY", fmt.Sprintf(s.conf.InfoMsg, s.getWelcome()))
+				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Info, s.getWelcome()))
 				continue
 			case "/username":
 				prevUsername := c.username
 				newUsername := strings.NewReplacer(s.conf.CR, "", s.conf.LF, "", s.conf.DefUsername, "").Replace(commands[1])
 				if uiu, _ := s.usernameInUse(newUsername); !uiu && len(newUsername) > 0 && strings.Index(newUsername, s.conf.ChanOpSymbol) == -1 {
 					c.username = newUsername
-					s.messageChan <- s.newMessage(c.username, "ALL", fmt.Sprintf(s.conf.UsernameMsg, prevUsername, newUsername))
+					s.messageChan <- s.newMessage(c.username, ALL, fmt.Sprintf(s.conf.Msgs.Username, prevUsername, newUsername))
 					continue
 				} else {
-					s.messageChan <- s.newMessage(c.username, "SENDERONLY", fmt.Sprintf(s.conf.FailedUsernameMsg, prevUsername, newUsername))
+					s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.FailedUsername, prevUsername, newUsername))
 					continue
 				}
 			default:
-				s.messageChan <- s.newMessage(c.username, "SENDERONLY", fmt.Sprintf(s.conf.UnrecognisedCommandMsg, c.username, incoming))
+				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.UnrecognisedCommand, c.username, incoming))
 				continue
 			}
 		} else if strings.HasPrefix(incoming, s.conf.WhisperSymbol) {
@@ -142,25 +156,25 @@ ForLoop:
 				whisperToUser := incoming[1:strings.Index(incoming, " ")]
 				whisperMsg := incoming[strings.Index(incoming, " ")+1 : len(incoming)]
 				if uiu, _ := s.usernameInUse(whisperToUser); uiu {
-					s.messageChan <- s.newMessage(whisperToUser, "SENDERONLY", fmt.Sprintf(s.conf.WhisperMsg, c.username, whisperMsg))
+					s.messageChan <- s.newMessage(whisperToUser, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Whisper, c.username, whisperMsg))
 					continue
 				} else {
-					s.messageChan <- s.newMessage(c.username, "SENDERONLY", fmt.Sprintf(s.conf.FailedwhisperMsg, whisperToUser))
+					s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Failedwhisper, whisperToUser))
 					continue
 				}
 			} else {
-				s.messageChan <- s.newMessage(c.username, "SENDERONLY", fmt.Sprintf(s.conf.UnrecognisedCommandMsg, c.username, incoming))
+				s.messageChan <- s.newMessage(c.username, SENDERONLY, fmt.Sprintf(s.conf.Msgs.UnrecognisedCommand, c.username, incoming))
 				continue
 			}
 		}
 		//This is the main broadcast of a normal message.
-		s.messageChan <- s.newMessage(c.username, "ALLEXCEPTSENDER", fmt.Sprintf(s.conf.NormalMsg, c.username, incoming))
+		s.messageChan <- s.newMessage(c.username, ALLEXCEPTSENDER, fmt.Sprintf(s.conf.Msgs.Normal, c.username, incoming))
 	}
 	//only reached when "break OuterLoop" (eg. /bye)
 	s.deleteFromClients(c)
 }
 
-func (s *ChatServer) newMessage(toUsername, scope, text string) *message {
+func (s *ChatServer) newMessage(toUsername string, scope msgScope, text string) *message {
 	return &message{toUsername, scope, text + s.conf.CRLF}
 }
 
@@ -170,11 +184,11 @@ func (s *ChatServer) sendMessages() {
 		case m := <-s.messageChan:
 			// Loop over all connected clients
 			for c := range s.clients {
-				if m.msgScope == "SENDERONLY" {
+				if m.scope == SENDERONLY {
 					if c.username != m.username {
 						continue
 					}
-				} else if m.msgScope == "ALLEXCEPTSENDER" {
+				} else if m.scope == ALLEXCEPTSENDER {
 					if c.username == m.username {
 						continue
 					}
@@ -189,11 +203,11 @@ func (s *ChatServer) sendMessages() {
 			}
 			r <- u
 		case c := <-s.writeClientsChan:
-			log.Printf(s.conf.AcceptedLog, c.username, c.conn.RemoteAddr())
+			log.Printf(s.conf.Logs.Accepted, c.username, c.conn.RemoteAddr())
 			s.clients[c] = struct{}{}
-			s.messageChan <- s.newMessage(c.username, "ALL", fmt.Sprintf(s.conf.HasConnectedMsg, c.username))
+			s.messageChan <- s.newMessage(c.username, ALL, fmt.Sprintf(s.conf.Msgs.HasConnected, c.username))
 		case c := <-s.deleteClientsChan:
-			s.messageChan <- s.newMessage(c.username, "ALL", fmt.Sprintf(s.conf.HasDisconnectedMsg, c.username))
+			s.messageChan <- s.newMessage(c.username, ALL, fmt.Sprintf(s.conf.Msgs.HasDisconnected, c.username))
 			delete(s.clients, c)
 			c.conn.Close()
 		}
