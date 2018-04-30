@@ -5,12 +5,17 @@ import (
 )
 
 func main() {
-	var serverPort int
+	//get config from json config file.
+	configuration := Configuration{}
+	err := GetConfigFromJSON("../../assets/config.json", &configuration)
+	if err != nil {
+		panic(err)
+	}
 
-	flag.IntVar(&serverPort, "port", 6000, "The port to run the Chat server on")
+	flag.IntVar(&configuration.Port, "port", 6000, "The port to run the Chat server on")
 	flag.Parse()
 
-	server, err := NewChatServer(serverPort)
+	server, err := NewChatServer(&configuration)
 	if err != nil {
 		panic(err.Error())
 	}

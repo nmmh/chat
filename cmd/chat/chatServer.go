@@ -72,22 +72,15 @@ type client struct {
 }
 
 // NewChatServer loads config; starts listening on port and returns an intialised server.
-func NewChatServer(port int) (*ChatServer, error) {
-	//get config from json config file.
-	configuration := Configuration{}
-	err := GetConfigFromJSON("../../assets/config.json", &configuration)
+func NewChatServer(configuration *Configuration) (*ChatServer, error) {
+	lsnr, err := net.Listen("tcp", ":"+strconv.Itoa(configuration.Port))
 	if err != nil {
 		return nil, err
-	}
-	configuration.Port = port //override conf with param
-	lsnr, e := net.Listen("tcp", ":"+strconv.Itoa(configuration.Port))
-	if e != nil {
-		return nil, e
 	}
 
 	log.Printf(configuration.Msgs.ServerStarted, configuration.Port)
 
-	return &ChatServer{&configuration,
+	return &ChatServer{configuration,
 			lsnr,
 			make(map[*client]struct{}),
 			0,
