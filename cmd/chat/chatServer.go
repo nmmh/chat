@@ -71,7 +71,7 @@ type client struct {
 	username string
 }
 
-// NewChatServer loads config; starts listening on port and returns an intialised server.
+// NewChatServer starts listening on port and returns an intialised server.
 func NewChatServer(configuration *Configuration) (*ChatServer, error) {
 	lsnr, err := net.Listen("tcp", ":"+strconv.Itoa(configuration.Port))
 	if err != nil {
@@ -117,7 +117,7 @@ ForLoop:
 		commands := strings.Split(incoming, " ")
 		switch string(commands[0][0]) {
 		case s.conf.ChanOpSymbol:
-			switch commands[0][1:len(commands[0])] {
+			switch commands[0][1:] {
 			case "bye":
 				break ForLoop
 			case "list":
@@ -145,7 +145,7 @@ ForLoop:
 			}
 		case string(s.conf.WhisperSymbol):
 			if len(commands) > 1 {
-				whisperToUser, whisperMsg := commands[0][1:len(commands[0])], commands[1:len(commands)]
+				whisperToUser, whisperMsg := commands[0][1:], commands[1:]
 				if uiu, _ := s.usernameInUse(whisperToUser); uiu {
 					s.messageChan <- s.newMessage(whisperToUser, SENDERONLY, fmt.Sprintf(s.conf.Msgs.Whisper, c.username, whisperMsg))
 					continue
@@ -188,7 +188,7 @@ func (s *ChatServer) sendMessages() {
 				}
 				go s.sendString(c.conn, m.text)
 			}
-			log.Printf("%s", m.text)
+			log.Printf(s.conf.Msgs.Normal, m.text)
 		case r := <-s.readAllUsernamesChan:
 			u := make([]string, 0)
 			for c := range s.clients {
@@ -254,9 +254,7 @@ func (s *ChatServer) sendWelcome(conn net.Conn) {
 	go s.sendString(conn, string(s.getWelcome()))
 }
 
-func (s *ChatServer) sendString(conn net.Conn, msg string) {
+func (s *ChatServer) sendString(conn net.Conn, msg string) error {
 	_, err := conn.Write([]byte(msg))
-	if err != nil {
-
-	}
+	return err
 }

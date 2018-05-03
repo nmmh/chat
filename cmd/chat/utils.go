@@ -26,7 +26,7 @@ func GetConfigFromJSON(filename string, configuration interface{}) (err error) {
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&configuration)
 	if err != nil {
-		return err
+		return
 	}
-	return err
+	return
 }
