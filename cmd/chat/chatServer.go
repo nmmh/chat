@@ -115,6 +115,9 @@ ForLoop:
 	for scanner.Scan() {
 		incoming := strings.NewReplacer(s.conf.CR, "", s.conf.LF, "").Replace(scanner.Text())
 		commands := strings.Split(incoming, " ")
+		if commands[0] == "" { //stop enter spamming.
+			continue
+		}
 		switch string(commands[0][0]) {
 		case s.conf.ChanOpSymbol:
 			switch commands[0][1:] {
